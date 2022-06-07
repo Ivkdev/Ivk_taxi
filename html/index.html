@@ -1,0 +1,56 @@
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="css/app.css" type="text/css" />
+</head>
+<body>
+    <script src="nui://game/ui/jquery.js" type="text/javascript"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.1.2/howler.min.js" type="text/javascript"></script>
+    <audio id="audioplayer" type="audio/ogg" ></audio>
+    <video id="videoplayer" style="width: 30%;height: 30%;display:none; margin:auto auto;">
+    </video>
+    <script>
+         var audioPlayer = null;
+         var videoPlayer = null;
+            // Listen for NUI Messages.
+         window.addEventListener('message', function(event) {
+            // Check for playSound transaction
+            if (event.data.transactionType == "stop")
+            {
+                if (audioPlayer != null) {
+                    audioPlayer.pause();
+                }
+            }
+            else if (event.data.transactionType == "play") {
+                audioPlayer = new Howl({src: ["https://images.forasterosrp.com/audio/" + event.data.transactionFile + ".ogg"]});
+                audioPlayer.volume(event.data.transactionVolume);
+                audioPlayer.load();
+                audioPlayer.on('end', function(){
+                    console.log('client audio finished');
+                    $.post("http://esx_mole_misiones/audio-end", '');
+                });
+                audioPlayer.play();
+            }
+            if (event.data.transactionType == "stopvideo")
+            {
+                if (videoPlayer != null) {
+                    videoPlayer.pause();
+                }
+            }
+            else if (event.data.transactionType == "playvideo") {
+                videoPlayer = document.getElementById('videoplayer');
+                videoPlayer.setAttribute('src', "https://images.forasterosrp.com/video/" + event.data.transactionFile + ".mp4");
+                videoPlayer.addEventListener('ended',myHandler,false);
+                    function myHandler(e) {
+                        videoPlayer.style.display = 'none';
+                        $.post("http://esx_mole_misiones/video-end", '');
+                    }
+                videoPlayer.style.display = 'block';
+                videoPlayer.play();
+               
+            }
+        });
+    </script>
+</body>
+</html>
